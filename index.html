@@ -25,54 +25,30 @@
             crossorigin="anonymous"
             referrerpolicy="no-referrer"
         ></script>
+        <script src="./index.js"></script>
 
         <script>
             const WIDTH_RATIO = 650;
             const HEIGHT_RATIO = 900;
+            let LAT_AVG = 0;
+            let LNG_AVG = 0;
+
             const map = document.querySelector("#map");
             let stations = [];
-
-            function getMapWidth() {
-                const {
-                    0: min_lat,
-                    length: length_lat,
-                    [length_lat - 1]: max_lat
-                } = stations
-                    .filter((station) => station.lat)
-                    .map((station) => station.lat)
-                    .sort();
-                return (max_lat - min_lat) * HEIGHT_RATIO;
-            }
-
-            function getMapHeight() {
-                const {
-                    0: min_lng,
-                    length: length_lng,
-                    [length_lng - 1]: max_lng
-                } = stations
-                    .filter((station) => station.lng)
-                    .map((station) => station.lng)
-                    .sort();
-                return (max_lng - min_lng) * WIDTH_RATIO;
-            }
-
-            function getMapSize() {
-                const width = getMapWidth();
-                const height = getMapHeight();
-
-                return [width, height];
-            }
 
             function drawMap() {
                 const [width, height] = getMapSize();
                 map.style.width = `${width}px`;
                 map.style.height = `${height}px`;
+
+                console.log(stations[0]);
             }
 
             fetch("./station_coordinate.json")
                 .then((res) => res.json())
                 .then((res) => {
                     stations = res;
+                    setLocationAverage();
                     drawMap();
                     //todo: 좌표로 지하철 그리기
                 })
