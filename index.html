@@ -11,7 +11,6 @@
             }
 
             #map {
-                border: 1px solid black;
                 position: relative;
             }
 
@@ -32,44 +31,39 @@
         <script src="./index.js"></script>
         <script>
             let DATA = {};
-            const WIDTH_RATIO = 900;
-            const HEIGHT_RATIO = 600;
-            let LAT_AVG = 0;
-            let LNG_AVG = 0;
-
             const map = document.querySelector("#map");
             let stations = [];
+            let zoom_ratio = 4;
 
             fetch("./station_coords.json")
                 .then((res) => res.json())
                 .then((res) => {
                     DATA = res;
 
-                    const coords = Object.values(DATA)
-                        .flatMap((data) => data.stations)
-                        .filter((data) => data["data-coords"])
-                        .map((data) => data["data-coords"].split(","))
-                        .map((data) => [Number(data[0]), Number(data[1])]);
+                    Object.entries(DATA).forEach(([line_name, info]) => {
+                        const { attr, stations } = info;
+                        const color = attr["data-color"];
+                        const label = attr["data-label"];
 
-                    const _2호선 = DATA["2"];
-                    _2호선.stations
-                        .filter((station) => station["data-coords"])
-                        .forEach((station) => {
-                            const [x, y] = station["data-coords"].split(",");
+                        stations
+                            .filter((station) => station["data-coords"])
+                            .forEach((station) => {
+                                const [x, y] = station["data-coords"].split(",");
 
-                            const elem = document.createElement("div");
-                            elem.classList.add("station");
-                            //todo: 색깔 입히기
-                            elem.style.top = `${y * 4}px`;
-                            elem.style.left = `${x * 4}px`;
-                            elem.dataset.name = station["station-nm"];
-                            elem.dataset.line = 2;
-                            elem.dataset.code = station["station-cd"];
-                            elem.dataset.uid = station["data-uid"];
-                            elem.dataset.marker = station["data-marker"];
+                                const elem = document.createElement("div");
+                                elem.style.backgroundColor = color;
+                                elem.classList.add("station");
+                                elem.style.top = `${y * zoom_ratio}px`;
+                                elem.style.left = `${x * zoom_ratio}px`;
+                                elem.dataset.name = station["station-nm"];
+                                elem.dataset.line = 2;
+                                elem.dataset.code = station["station-cd"];
+                                elem.dataset.uid = station["data-uid"];
+                                elem.dataset.marker = station["data-marker"];
 
-                            map.appendChild(elem);
-                        });
+                                map.appendChild(elem);
+                            });
+                    });
                 })
                 .catch(console.error);
         </script>
