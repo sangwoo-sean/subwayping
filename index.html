@@ -32,58 +32,23 @@
         <script>
             let DATA = {};
             const map = document.querySelector("#map");
-            let stations = [];
-            let zoom_ratio = 4;
+            let zoom_ratio = 8;
 
             fetch("./station_coords.json")
                 .then((res) => res.json())
                 .then((res) => {
                     DATA = res;
-
-                    Object.entries(DATA).forEach(([line_name, info]) => {
-                        const { attr, stations } = info;
-                        const color = attr["data-color"];
-                        const label = attr["data-label"];
-
-                        stations
-                            .filter((station) => station["data-coords"])
-                            .forEach((station) => {
-                                const [x, y] = station["data-coords"].split(",");
-
-                                const elem = document.createElement("div");
-                                elem.style.backgroundColor = color;
-                                elem.classList.add("station");
-                                elem.style.top = `${y * zoom_ratio}px`;
-                                elem.style.left = `${x * zoom_ratio}px`;
-                                elem.dataset.x = x;
-                                elem.dataset.y = y;
-                                elem.dataset.name = station["station-nm"];
-                                elem.dataset.line = 2;
-                                elem.dataset.code = station["station-cd"];
-                                elem.dataset.uid = station["data-uid"];
-                                elem.dataset.marker = station["data-marker"];
-
-                                map.appendChild(elem);
-                            });
-                    });
+                    paintLines(DATA);
                 })
                 .catch(console.error);
-
-            function repaint() {
-                map.querySelectorAll(".station").forEach((station) => {
-                    const { x, y } = station.dataset;
-                    station.style.top = `${Number(y) * zoom_ratio}px`;
-                    station.style.left = `${Number(x) * zoom_ratio}px`;
-                    station.style.width = `${zoom_ratio * 2}px`;
-                    station.style.height = `${zoom_ratio * 2}px`;
-                });
-            }
 
             const MIN_RATIO = 1;
             const MAX_RATIO = 8;
             document.addEventListener("wheel", (e) => {
                 const zoom_out = e.deltaY > 0;
-                if ((zoom_out && zoom_ratio === MIN_RATIO) || (!zoom_out && zoom_ratio === MAX_RATIO)) return;
+
+                if (zoom_out && zoom_ratio === MIN_RATIO) return;
+                if (!zoom_out && zoom_ratio === MAX_RATIO) return;
 
                 if (zoom_out) {
                     zoom_ratio = Math.max(MIN_RATIO, zoom_ratio - 1);
@@ -91,7 +56,7 @@
                     zoom_ratio = Math.min(MAX_RATIO, zoom_ratio + 1);
                 }
 
-                repaint();
+                paintLines(DATA);
             });
         </script>
     </body>
