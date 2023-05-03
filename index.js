@@ -29,6 +29,22 @@ function paintLines(lines) {
                 elem.dataset.line = line_name;
                 elem.dataset.label = label;
 
+                elem.addEventListener("mouseover", (e) => {
+                    const station = e.currentTarget;
+                    const { label, name, x, y } = station.dataset;
+
+                    const info = document.querySelector("#info");
+                    const [line_elem, name_elem] = info.children;
+                    line_elem.innerText = label;
+                    name_elem.innerText = name;
+                    info.style.top = `${y * zoom_ratio}px`;
+                    info.style.left = `${x * zoom_ratio}px`;
+                    info.style.display = "block";
+                });
+                elem.addEventListener("mouseout", (e) => {
+                    document.querySelector("#info").style.display = "none";
+                });
+
                 map.appendChild(elem);
             });
     });
