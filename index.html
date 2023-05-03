@@ -55,6 +55,8 @@
                                 elem.classList.add("station");
                                 elem.style.top = `${y * zoom_ratio}px`;
                                 elem.style.left = `${x * zoom_ratio}px`;
+                                elem.dataset.x = x;
+                                elem.dataset.y = y;
                                 elem.dataset.name = station["station-nm"];
                                 elem.dataset.line = 2;
                                 elem.dataset.code = station["station-cd"];
@@ -66,6 +68,31 @@
                     });
                 })
                 .catch(console.error);
+
+            function repaint() {
+                map.querySelectorAll(".station").forEach((station) => {
+                    const { x, y } = station.dataset;
+                    station.style.top = `${Number(y) * zoom_ratio}px`;
+                    station.style.left = `${Number(x) * zoom_ratio}px`;
+                    station.style.width = `${zoom_ratio * 2}px`;
+                    station.style.height = `${zoom_ratio * 2}px`;
+                });
+            }
+
+            const MIN_RATIO = 1;
+            const MAX_RATIO = 8;
+            document.addEventListener("wheel", (e) => {
+                const zoom_out = e.deltaY > 0;
+                if ((zoom_out && zoom_ratio === MIN_RATIO) || (!zoom_out && zoom_ratio === MAX_RATIO)) return;
+
+                if (zoom_out) {
+                    zoom_ratio = Math.max(MIN_RATIO, zoom_ratio - 1);
+                } else {
+                    zoom_ratio = Math.min(MAX_RATIO, zoom_ratio + 1);
+                }
+
+                repaint();
+            });
         </script>
     </body>
 </html>
