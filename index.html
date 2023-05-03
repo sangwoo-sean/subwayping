@@ -29,15 +29,9 @@
         <h1>Map</h1>
         <div id="map"></div>
 
-        <script
-            src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.4/d3.min.js"
-            integrity="sha512-nfUlp2ZWPKWlnAH/OsMeAqRSYBxOdPYeBXwceyw6QqqZ7uTT/s5/eS1hMKphjVBouk0jf/JQ8ULVJRnEqSHkXA=="
-            crossorigin="anonymous"
-            referrerpolicy="no-referrer"
-        ></script>
         <script src="./index.js"></script>
-
         <script>
+            let DATA = {};
             const WIDTH_RATIO = 900;
             const HEIGHT_RATIO = 600;
             let LAT_AVG = 0;
@@ -46,37 +40,36 @@
             const map = document.querySelector("#map");
             let stations = [];
 
-            function drawMap() {
-                const [width, height] = getMapSize();
-                map.style.width = `${width}px`;
-                map.style.height = `${height}px`;
-
-                stations.forEach((station) => {
-                    const { lat, lng } = station;
-                    const x = Math.round((LNG_AVG - lng) * WIDTH_RATIO + width / 2);
-                    const y = Math.round((LAT_AVG - lat) * HEIGHT_RATIO + height / 2);
-
-                    const elem = document.createElement("div");
-                    elem.classList.add("station");
-                    elem.style.top = `${y}px`;
-                    elem.style.left = `${x}px`;
-                    elem.dataset.line = station.line;
-                    elem.dataset.name = station.name;
-                    elem.dataset.code = station.code;
-                    elem.dataset.lat = station.lat;
-                    elem.dataset.lng = station.lng;
-
-                    map.appendChild(elem);
-                });
-            }
-
-            fetch("./station_coordinate.json")
+            fetch("./station_coords.json")
                 .then((res) => res.json())
                 .then((res) => {
-                    stations = res.filter((station) => station.lat && station.lng);
-                    setLocationAverage();
-                    drawMap();
-                    //todo: 좌표로 지하철 그리기
+                    DATA = res;
+
+                    const coords = Object.values(DATA)
+                        .flatMap((data) => data.stations)
+                        .filter((data) => data["data-coords"])
+                        .map((data) => data["data-coords"].split(","))
+                        .map((data) => [Number(data[0]), Number(data[1])]);
+
+                    const _2호선 = DATA["2"];
+                    _2호선.stations
+                        .filter((station) => station["data-coords"])
+                        .forEach((station) => {
+                            const [x, y] = station["data-coords"].split(",");
+
+                            const elem = document.createElement("div");
+                            elem.classList.add("station");
+                            //todo: 색깔 입히기
+                            elem.style.top = `${y * 4}px`;
+                            elem.style.left = `${x * 4}px`;
+                            elem.dataset.name = station["station-nm"];
+                            elem.dataset.line = 2;
+                            elem.dataset.code = station["station-cd"];
+                            elem.dataset.uid = station["data-uid"];
+                            elem.dataset.marker = station["data-marker"];
+
+                            map.appendChild(elem);
+                        });
                 })
                 .catch(console.error);
         </script>
